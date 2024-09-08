@@ -1,5 +1,6 @@
 package com.example.sportscapee.pages
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -20,7 +21,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -29,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -38,25 +42,32 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.sportscapee.R
+import com.example.sportscapee.navigation.Routes
+import com.example.sportscapee.view_models.AuthState
 import com.example.sportscapee.view_models.AuthViewModel
 
 @Composable
 fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
 
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
+    var email by remember {
+        mutableStateOf("")
+    }
 
-    var isEmailError by remember { mutableStateOf(false) }
-    var emailErrorText by remember { mutableStateOf("") }
+    var password by remember {
+        mutableStateOf("")
+    }
 
-    var isPasswordError by remember { mutableStateOf(false) }
-    var passwordErrorText by remember { mutableStateOf("") }
+    val authState = authViewModel.authState.observeAsState()
+    val context = LocalContext.current
 
-    var isError = remember { mutableStateOf(false) }
-    var errorText by remember { mutableStateOf("") }
-
-    var buttonIsEnabled by remember { mutableStateOf(true) }
-    var isLoading by remember { mutableStateOf(false) }
+    LaunchedEffect(authState.value) {
+        when(authState.value){
+            is AuthState.Authenticated -> navController.navigate(route = Routes.home)
+            is AuthState.Error -> Toast.makeText(context,
+                (authState.value as AuthState.Error).message, Toast.LENGTH_SHORT).show()
+            else -> Unit
+        }
+    }
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -115,11 +126,21 @@ fun LoginPage(modifier: Modifier = Modifier, navController: NavController, authV
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Button(onClick = {}) { Text("Login") }
+            Button(onClick = {
+                authViewModel.login(email,password)
+            },
+                enabled = authState.value != AuthState.Loading
+            ) {
+                Text(text = "Login")
+            }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            TextButton(onClick = {}) { Text("Don't have account? Sign up!") }
+            TextButton(onClick = {
+               navController.navigate(route = Routes.signUp)
+            }) {
+                Text("Don't have account? Sign up!")
+            }
         }
     }
 }

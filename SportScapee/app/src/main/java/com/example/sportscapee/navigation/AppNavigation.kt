@@ -16,13 +16,13 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel) {
     val navController = rememberNavController();
 
     NavHost(navController = navController, startDestination = Routes.login, builder = {
-        composable(Routes.login){
+        composable(route = Routes.login){
             LoginPage(modifier, navController, authViewModel)
         }
-        composable(Routes.signUp){
+        composable(route = Routes.signUp){
             SignupPage(modifier, navController, authViewModel)
         }
-        composable(Routes.home){
+        composable(route = Routes.home){
             HomePage(modifier, navController, authViewModel)
         }
     })

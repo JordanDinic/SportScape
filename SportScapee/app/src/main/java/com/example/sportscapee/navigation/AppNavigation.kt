@@ -35,8 +35,8 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel, a
             //LeaderboardPage(modifier, navController, authViewModel)
         }
         composable(route = Routes.home){
-            //HomePage(modifier, navController, authViewModel)
-            LeaderboardPage(modifier, navController, authViewModel)
+            HomePage(modifier, navController, authViewModel)
+            //LeaderboardPage(modifier, navController, authViewModel)
         }
         composable(route = Routes.profile){
             HomePage(modifier, navController, authViewModel)

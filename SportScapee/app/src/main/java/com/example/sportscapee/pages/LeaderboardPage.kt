@@ -1,30 +1,33 @@
 package com.example.sportscapee.pages
 
+import android.annotation.SuppressLint
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.BottomAppBar
+import androidx.compose.material.Icon
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -52,19 +55,25 @@ import com.example.sportscapee.view_models.AuthState
 import com.example.sportscapee.view_models.AuthViewModel
 
 @OptIn(ExperimentalFoundationApi::class, ExperimentalMaterial3Api::class)
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter", "UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun LeaderboardPage(modifier: Modifier = Modifier, navController: NavController, authViewModel: AuthViewModel) {
     val authState = authViewModel.authState.observeAsState()
 
     LaunchedEffect(authState.value) {
-        when(authState.value){
+        when (authState.value) {
             is AuthState.Unauthenticated -> navController.navigate(route = Routes.login)
             else -> Unit
         }
     }
 
-
-    var isMenuExpanded by remember { mutableStateOf(false) }
+    val bottomBarList = listOf(
+        BottomItem("homePage", Icons.Default.Home),
+        BottomItem("Search", Icons.Default.Search),
+        BottomItem("Add Place", Icons.Default.Add),
+        BottomItem("leaderboardPage", Icons.Default.BarChart),
+        BottomItem("profilePage", Icons.Default.Person)
+    )
 
 
     var leaderboard by remember { mutableStateOf(emptyList<User>()) }
@@ -72,43 +81,37 @@ fun LeaderboardPage(modifier: Modifier = Modifier, navController: NavController,
         leaderboard = it
     }
 
-    Column {
-        //////
-
-        TopAppBar(
-            title = { Text("Your Title") },
-            navigationIcon = {
-                IconButton(onClick = {
-                    navController.navigate(route = Routes.profile)
-                }) {
-                    Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "Back")
-                }
-            },
-            actions = {
-                IconButton(onClick = { isMenuExpanded = true }) {
-                    Icon(imageVector =  Icons.Filled.MoreVert, contentDescription = "More options")
-                }
-                DropdownMenu(
-                    expanded = isMenuExpanded,
-                    onDismissRequest = { isMenuExpanded = false }
-                ) {
-                    DropdownMenuItem(
-                        text = { Text("Sign Out") },
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            TopAppBar(
+                title = { Text("Leaderboard") },
+                colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.White)
+            )
+        },
+        bottomBar = {
+            BottomAppBar {
+                bottomBarList.forEachIndexed { index, item ->
+                    NavigationBarItem(
+                        selected = false,
                         onClick = {
-                            authViewModel.signout()
-                            isMenuExpanded = false // Close the menu after sign out
+                            navController.navigate(route = item.name)
+                        },
+                        icon = {
+                            Icon(imageVector = item.icon, contentDescription = item.name)
                         }
                     )
                 }
-            },
-            colors = TopAppBarDefaults.smallTopAppBarColors(containerColor = Color.White)
-        )
+            }
+        }
+    ) { paddingValues ->
 
-        //Spacer(modifier = Modifier.height(16.dp))
 
-        //////
-
-        LazyColumn {
+        LazyColumn(
+            modifier = Modifier
+            .fillMaxSize()
+            .padding(bottom = paddingValues.calculateBottomPadding(), top = paddingValues.calculateTopPadding()),
+            ) {
             stickyHeader {
                 Row(
                     modifier = Modifier
@@ -119,9 +122,9 @@ fun LeaderboardPage(modifier: Modifier = Modifier, navController: NavController,
                 ) {
                     Text(text = "#", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.width(56.dp))
-                    Text(text = "Korisničko ime", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text(text = "Username", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                     Spacer(modifier = Modifier.weight(1f))
-                    Text(text = "Poeni", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text(text = "Points", fontWeight = FontWeight.Bold, fontSize = 18.sp)
                 }
                 HorizontalDivider(color = Color.Gray, thickness = 1.dp)
             }
@@ -152,7 +155,7 @@ fun LeaderboardPage(modifier: Modifier = Modifier, navController: NavController,
                 }
             }
         }
+
+
     }
-
-
 }

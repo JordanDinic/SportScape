@@ -22,23 +22,32 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.Dispatchers
+import androidx.compose.ui.unit.sp
+import com.example.sportscapee.view_models.AuthViewModel
+import com.example.sportscapee.view_models.FieldState
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun AlbumScreen(modifier: Modifier = Modifier,
-                viewModel: AlbumViewModel) {
+                viewModel: AlbumViewModel, authViewModel: AuthViewModel) {
 
     // collecting the flow from the view model as a state allows our ViewModel and View
     // to be in sync with each other.
@@ -83,13 +92,53 @@ fun AlbumScreen(modifier: Modifier = Modifier,
         }
     }
 
+/////////////////////////////////////////////////////////////////////Dodavanje objekata
+    val fieldState = authViewModel.fieldState.observeAsState()
+    var name by remember { mutableStateOf("") }
+    var description by remember { mutableStateOf("") }
+    var type by remember { mutableStateOf("") }
+
+
     // basic view that has 2 buttons and a grid for selected pictures
     Column(modifier = Modifier
         .fillMaxSize()
         .padding(20.dp)
         .verticalScroll(rememberScrollState())
         .then(modifier),
-        horizontalAlignment = Alignment.CenterHorizontally) {
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Text(
+            text = "Add sport field",
+            color = Color.DarkGray.copy(1f),
+            fontSize = 28.sp,
+            fontFamily = FontFamily.SansSerif,
+            fontWeight = FontWeight.Medium,
+
+            )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        OutlinedTextField(
+            value = name,
+            onValueChange = { name = it },
+            label = { Text("Name", color = Color.DarkGray.copy(0.75f)) })
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = description,
+            onValueChange = { description = it },
+            label = { Text("Description", color = Color.DarkGray.copy(0.75f)) })
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = type,
+            onValueChange = { type = it },
+            label = { Text("Type", color = Color.DarkGray.copy(0.75f)) })
+
+        Spacer(modifier = Modifier.height(8.dp))
 
         Row {
             Button(onClick = {
@@ -123,13 +172,21 @@ fun AlbumScreen(modifier: Modifier = Modifier,
                 )
             }
         }
+
+        Button(
+            onClick = {
+                authViewModel.addField(name,type,description,viewState.selectedPictures)
+            }, enabled = fieldState.value != FieldState.Loading
+        ) {
+            Text(text = "Add field")
+        }
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.P)
-@Preview(widthDp = 360, heightDp = 640)
-@Composable
-fun MainScreenPreview() {
-    val viewModel = AlbumViewModel(Dispatchers.Default)
-    AlbumScreen(viewModel = viewModel)
-}
+//@RequiresApi(Build.VERSION_CODES.P)
+//@Preview(widthDp = 360, heightDp = 640)
+//@Composable
+//fun MainScreenPreview() {
+//    val viewModel = AlbumViewModel(Dispatchers.Default)
+ //   AlbumScreen(viewModel = viewModel)
+//}

@@ -11,8 +11,8 @@ import com.example.sportscapee.album.ProfilePictureViewModel
 import com.example.sportscapee.pages.HomePage
 import com.example.sportscapee.pages.LeaderboardPage
 import com.example.sportscapee.pages.LoginPage
-import com.example.sportscapee.pages.MapPage
 import com.example.sportscapee.pages.SignupPage
+import com.example.sportscapee.profile_picture.AlbumScreen
 import com.example.sportscapee.profile_picture.AlbumViewModel
 import com.example.sportscapee.view_models.AuthViewModel
 
@@ -28,14 +28,16 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel, a
         }
         composable(route = Routes.signUp){
             SignupPage(modifier, navController, authViewModel, profilePictureViewModel)
-            //AlbumScreen(modifier, albumViewModel)
+            //AlbumScreen(modifier, albumViewModel, authViewModel)
             //ProfilePictureScreen(modifier, profilePictureViewModel)
             //LeaderboardPage(modifier, navController, authViewModel)
         }
         composable(route = Routes.home){
             //HomePage(modifier, navController, authViewModel)
             //LeaderboardPage(modifier, navController, authViewModel)
-            MapPage(modifier, navController, authViewModel)
+            //MapPage(modifier, navController, authViewModel)
+            AlbumScreen(modifier, albumViewModel, authViewModel)
+            //AddSportFieldPage(modifier, navController, authViewModel)
         }
         composable(route = Routes.profile){
             HomePage(modifier, navController, authViewModel)

@@ -1,5 +1,6 @@
 package com.example.sportscapee.database
 
+import com.example.sportscapee.models.SportField
 import com.example.sportscapee.models.User
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.Query
@@ -26,6 +27,18 @@ object DataRetriver {
                 if (snap != null) {
                     users = snap.toObjects(User::class.java)
                     listener(users)
+                }
+            }
+    }
+
+    fun allSportFields(listener: (List<SportField>) -> Unit) {
+        val db = Firebase.firestore
+        var fields: MutableList<SportField>
+        db.collection("SportFields")
+            .addSnapshotListener { snap, _ ->
+                if (snap != null) {
+                    fields = snap.toObjects(SportField::class.java)
+                    listener(fields)
                 }
             }
     }

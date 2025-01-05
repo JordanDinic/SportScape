@@ -70,6 +70,7 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.firebase.crashlytics.buildtools)
     implementation(libs.play.services.maps)
+    implementation(libs.play.services.location)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

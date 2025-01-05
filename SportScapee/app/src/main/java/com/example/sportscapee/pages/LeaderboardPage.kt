@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -70,7 +71,7 @@ fun LeaderboardPage(modifier: Modifier = Modifier, navController: NavController,
     val bottomBarList = listOf(
         BottomItem("homePage", Icons.Default.Home),
         BottomItem("Search", Icons.Default.Search),
-        BottomItem("Add Place", Icons.Default.Add),
+        BottomItem("addFieldPage", Icons.Default.Add),
         BottomItem("leaderboardPage", Icons.Default.BarChart),
         BottomItem("profilePage", Icons.Default.Person)
     )
@@ -82,7 +83,8 @@ fun LeaderboardPage(modifier: Modifier = Modifier, navController: NavController,
     }
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
+            .systemBarsPadding(),
         topBar = {
             TopAppBar(
                 title = { Text("Leaderboard") },

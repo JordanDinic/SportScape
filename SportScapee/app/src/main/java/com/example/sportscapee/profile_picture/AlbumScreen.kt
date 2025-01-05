@@ -21,7 +21,17 @@ import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.BottomAppBar
+import androidx.compose.material.Icon
+import androidx.compose.material.Scaffold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -41,13 +51,17 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import com.example.sportscapee.navigation.Routes
+import com.example.sportscapee.pages.BottomItem
+import com.example.sportscapee.view_models.AuthState
 import com.example.sportscapee.view_models.AuthViewModel
 import com.example.sportscapee.view_models.FieldState
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun AlbumScreen(modifier: Modifier = Modifier,
-                viewModel: AlbumViewModel, authViewModel: AuthViewModel) {
+                viewModel: AlbumViewModel, navController: NavController, authViewModel: AuthViewModel) {
 
     // collecting the flow from the view model as a state allows our ViewModel and View
     // to be in sync with each other.
@@ -55,35 +69,38 @@ fun AlbumScreen(modifier: Modifier = Modifier,
 
     val currentContext = LocalContext.current
 
-    val pickImageFromAlbumLauncher = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(20)) { urls ->
-        viewModel.onReceive(Intent.OnFinishPickingImagesWith(currentContext, urls))
-        // or if you are using AndroidViewModel use this event instead
-        // viewModel.onEvent(Event.OnFinishPickingImages(urls))
-    }
-
-    val cameraLauncher = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isImageSaved ->
-        if (isImageSaved) {
-            viewModel.onReceive(Intent.OnImageSavedWith(currentContext))
+    val pickImageFromAlbumLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(20)) { urls ->
+            viewModel.onReceive(Intent.OnFinishPickingImagesWith(currentContext, urls))
             // or if you are using AndroidViewModel use this event instead
-            // viewModel.onEvent(Event.OnImageSaved)
-        } else {
-            // handle image saving error or cancellation
-            viewModel.onReceive(Intent.OnImageSavingCanceled)
+            // viewModel.onEvent(Event.OnFinishPickingImages(urls))
         }
-    }
 
-    val permissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permissionGranted ->
-        if (permissionGranted) {
-            viewModel.onReceive(Intent.OnPermissionGrantedWith(currentContext))
-            // or if you are using AndroidViewModel use this event instead
-            // viewModel.onEvent(Event.OnPermissionGranted)
-        } else {
-            // handle permission denied such as:
-            viewModel.onReceive(Intent.OnPermissionDenied)
-            // or perhaps show a toast
-            // Toast.makeText(context, "In order to take pictures, you have to allow this app to use your camera", Toast.LENGTH_SHORT).show()
+    val cameraLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { isImageSaved ->
+            if (isImageSaved) {
+                viewModel.onReceive(Intent.OnImageSavedWith(currentContext))
+                // or if you are using AndroidViewModel use this event instead
+                // viewModel.onEvent(Event.OnImageSaved)
+            } else {
+                // handle image saving error or cancellation
+                viewModel.onReceive(Intent.OnImageSavingCanceled)
+            }
         }
-    }
+
+    val permissionLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { permissionGranted ->
+            if (permissionGranted) {
+                viewModel.onReceive(Intent.OnPermissionGrantedWith(currentContext))
+                // or if you are using AndroidViewModel use this event instead
+                // viewModel.onEvent(Event.OnPermissionGranted)
+            } else {
+                // handle permission denied such as:
+                viewModel.onReceive(Intent.OnPermissionDenied)
+                // or perhaps show a toast
+                // Toast.makeText(context, "In order to take pictures, you have to allow this app to use your camera", Toast.LENGTH_SHORT).show()
+            }
+        }
 
     // this ensures that the camera is launched only once when the url of the temp file changes
     LaunchedEffect(key1 = viewState.tempFileUrl) {
@@ -93,92 +110,129 @@ fun AlbumScreen(modifier: Modifier = Modifier,
     }
 
 /////////////////////////////////////////////////////////////////////Dodavanje objekata
+    val authState = authViewModel.authState.observeAsState()
+
+    LaunchedEffect(authState.value) {
+        when (authState.value) {
+            is AuthState.Unauthenticated -> navController.navigate(route = Routes.login)
+            else -> Unit
+        }
+    }
+
     val fieldState = authViewModel.fieldState.observeAsState()
     var name by remember { mutableStateOf("") }
     var description by remember { mutableStateOf("") }
     var type by remember { mutableStateOf("") }
 
+    val bottomBarList = listOf(
+        BottomItem("homePage", Icons.Default.Home),
+        BottomItem("Search", Icons.Default.Search),
+        BottomItem("addFieldPage", Icons.Default.Add),
+        BottomItem("leaderboardPage", Icons.Default.BarChart),
+        BottomItem("profilePage", Icons.Default.Person)
+    )
+
 
     // basic view that has 2 buttons and a grid for selected pictures
-    Column(modifier = Modifier
-        .fillMaxSize()
-        .padding(20.dp)
-        .verticalScroll(rememberScrollState())
-        .then(modifier),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-
-        Text(
-            text = "Add sport field",
-            color = Color.DarkGray.copy(1f),
-            fontSize = 28.sp,
-            fontFamily = FontFamily.SansSerif,
-            fontWeight = FontWeight.Medium,
-
-            )
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = name,
-            onValueChange = { name = it },
-            label = { Text("Name", color = Color.DarkGray.copy(0.75f)) })
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = description,
-            onValueChange = { description = it },
-            label = { Text("Description", color = Color.DarkGray.copy(0.75f)) })
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = type,
-            onValueChange = { type = it },
-            label = { Text("Type", color = Color.DarkGray.copy(0.75f)) })
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row {
-            Button(onClick = {
-                permissionLauncher.launch(Manifest.permission.CAMERA)
-            }) {
-                Text(text = "Take a photo")
-            }
-            Spacer(modifier = Modifier.width(16.dp))
-            Button(onClick = {
-                pickImageFromAlbumLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
-            }) {
-                Text(text = "Pick a picture")
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        bottomBar = {
+            BottomAppBar {
+                bottomBarList.forEachIndexed { index, item ->
+                    NavigationBarItem(
+                        selected = false,
+                        onClick = {
+                            navController.navigate(route = item.name)
+                        },
+                        icon = {
+                            Icon(imageVector = item.icon, contentDescription = item.name)
+                        }
+                    )
+                }
             }
         }
-
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(text = "Selected Pictures")
-        LazyVerticalGrid(
-            columns = GridCells.Adaptive(150.dp),
-            userScrollEnabled = false,
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(0.dp, 1200.dp)
+                .fillMaxSize()
+                .padding(bottom = paddingValues.calculateBottomPadding(), top = paddingValues.calculateTopPadding())
+                .verticalScroll(rememberScrollState())
+                .then(modifier),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            itemsIndexed(viewState.selectedPictures) { index, picture ->
-                Image(
-                    modifier = Modifier.padding(8.dp),
-                    bitmap = picture,
-                    contentDescription = null,
-                    contentScale = ContentScale.FillWidth
-                )
-            }
-        }
 
-        Button(
-            onClick = {
-                authViewModel.addField(name,type,description,viewState.selectedPictures)
-            }, enabled = fieldState.value != FieldState.Loading
-        ) {
-            Text(text = "Add field")
+            Text(
+                text = "Add sport field",
+                color = Color.DarkGray.copy(1f),
+                fontSize = 28.sp,
+                fontFamily = FontFamily.SansSerif,
+                fontWeight = FontWeight.Medium,
+
+                )
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            OutlinedTextField(
+                value = name,
+                onValueChange = { name = it },
+                label = { Text("Name", color = Color.DarkGray.copy(0.75f)) })
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = description,
+                onValueChange = { description = it },
+                label = { Text("Description", color = Color.DarkGray.copy(0.75f)) })
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = type,
+                onValueChange = { type = it },
+                label = { Text("Type", color = Color.DarkGray.copy(0.75f)) })
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row {
+                Button(onClick = {
+                    permissionLauncher.launch(Manifest.permission.CAMERA)
+                }) {
+                    Text(text = "Take a photo")
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Button(onClick = {
+                    pickImageFromAlbumLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }) {
+                    Text(text = "Pick a picture")
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(text = "Selected Pictures")
+            LazyVerticalGrid(
+                columns = GridCells.Adaptive(150.dp),
+                userScrollEnabled = false,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(0.dp, 1200.dp)
+            ) {
+                itemsIndexed(viewState.selectedPictures) { index, picture ->
+                    Image(
+                        modifier = Modifier.padding(8.dp),
+                        bitmap = picture,
+                        contentDescription = null,
+                        contentScale = ContentScale.FillWidth
+                    )
+                }
+            }
+
+            Button(
+                onClick = {
+                    authViewModel.addField(name, type, description, viewState.selectedPictures)
+                }, enabled = fieldState.value != FieldState.Loading
+            ) {
+                Text(text = "Add field")
+            }
         }
     }
 }

@@ -182,8 +182,10 @@ class AuthViewModel : ViewModel() {
                     .add(sportField)
                     .addOnSuccessListener { documentReference ->
                         val fieldId = documentReference.id
-
+                        val userId = getCurrentUserId()
                         val uploadedUrls = mutableListOf<String>()
+                        val userDocRef = userId?.let { db.collection("users").document(it) }
+
 
                         images.forEachIndexed{index, imageBitmap ->
                             val bitmap = imageBitmap.asAndroidBitmap()
@@ -207,6 +209,33 @@ class AuthViewModel : ViewModel() {
                             }
 
                         }
+
+                        if (userDocRef != null) {
+                            userDocRef.get()
+                                .addOnSuccessListener { document ->
+                                    if (document.exists()) {
+                                        val currentPoints = document.getLong("points") ?: 0
+                                        val updatedPoints = currentPoints + 10
+
+                                        // Ažuriraj poene u Firestore-u
+                                        userDocRef.update("points", updatedPoints)
+                                            .addOnSuccessListener {
+                                                // Uspešno ažurirano
+                                            }
+                                            .addOnFailureListener { exception ->
+                                                // Greška prilikom ažuriranja
+                                            }
+                                    } else {
+                                        //"Dokument za korisnika ne postoji"
+                                    }
+                                }
+                                .addOnFailureListener { exception ->
+                                    // Greška prilikom dohvatanja
+                                }
+                        }
+
+
+
                     }.addOnFailureListener {
                         _fieldState.value = FieldState.Error("Doslo je do greske")
                     }

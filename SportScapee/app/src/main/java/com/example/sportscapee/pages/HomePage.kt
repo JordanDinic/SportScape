@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.BottomAppBar
 import androidx.compose.material.Icon
@@ -63,7 +64,7 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, authVi
     val bottomBarList = listOf(
         BottomItem("homePage", Icons.Default.Home),
         BottomItem("Search", Icons.Default.Search),
-        BottomItem("Add Place", Icons.Default.Add),
+        BottomItem("addFieldPage", Icons.Default.Add),
         BottomItem("leaderboardPage", Icons.Default.BarChart),
         BottomItem("profilePage", Icons.Default.Person)
     )
@@ -95,7 +96,8 @@ fun HomePage(modifier: Modifier = Modifier, navController: NavController, authVi
     //////////////////////////
 
     Scaffold(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize()
+            .systemBarsPadding(),
         bottomBar = {
             BottomAppBar {
                 bottomBarList.forEachIndexed { index, item ->

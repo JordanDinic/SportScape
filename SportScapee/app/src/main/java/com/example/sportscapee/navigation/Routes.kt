@@ -6,4 +6,5 @@ object Routes{
     val home = "homePage"
     val profile = "profilePage"
     val leaderboard = "leaderboardPage"
+    val addField = "addFieldPage"
 }

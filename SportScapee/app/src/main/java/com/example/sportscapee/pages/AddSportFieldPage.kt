@@ -1,6 +1,9 @@
 package com.example.sportscapee.pages
 
 import android.Manifest
+import android.annotation.SuppressLint
+import android.content.pm.PackageManager
+import android.location.Location
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
@@ -37,6 +40,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.livedata.observeAsState
@@ -52,6 +56,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
 import com.example.sportscapee.navigation.Routes
 import com.example.sportscapee.profile_picture.AlbumViewModel
@@ -60,11 +65,15 @@ import com.example.sportscapee.profile_picture.Intent
 import com.example.sportscapee.view_models.AuthState
 import com.example.sportscapee.view_models.AuthViewModel
 import com.example.sportscapee.view_models.FieldState
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.tasks.Task
 
 @RequiresApi(Build.VERSION_CODES.P)
 @Composable
 fun AddSportFieldPage(modifier: Modifier = Modifier,
                 viewModel: AlbumViewModel, navController: NavController, authViewModel: AuthViewModel) {
+    val context = LocalContext.current
 
     // collecting the flow from the view model as a state allows our ViewModel and View
     // to be in sync with each other.
@@ -135,6 +144,20 @@ fun AddSportFieldPage(modifier: Modifier = Modifier,
         BottomItem("profilePage", Icons.Default.Person)
     )
 
+    //trenutna lokacija
+    val location = remember { mutableStateOf<Location?>(null) }
+    val fusedLocationClient = LocationServices.getFusedLocationProviderClient(context)
+    LaunchedEffect(Unit) {
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            getCurrentLocation(fusedLocationClient, location)
+        } else {
+
+        }
+    }
 
     // basic view that has 2 buttons and a grid for selected pictures
     Scaffold(
@@ -232,12 +255,38 @@ fun AddSportFieldPage(modifier: Modifier = Modifier,
 
             Button(
                 onClick = {
-                    authViewModel.addField(name, type, description, viewState.selectedPictures)
+                    authViewModel.addField(name, type, description, viewState.selectedPictures,
+                        com.google.android.gms.maps.model.LatLng(
+                            location.value?.latitude!!,
+                            location.value?.longitude!!
+                        )
+                    )
                 }, enabled = fieldState.value != FieldState.Loading
             ) {
                 Text(text = "Add field")
             }
         }
+    }
+}
+
+@SuppressLint("MissingPermission")
+fun getCurrentLocation(
+    fusedLocationClient: FusedLocationProviderClient,
+    locationState: MutableState<Location?>,
+
+    ) {
+    val locationTask: Task<Location> = fusedLocationClient.lastLocation
+
+    locationTask.addOnSuccessListener { location ->
+        if (location != null) {
+            locationState.value = location
+        } else {
+
+        }
+    }
+
+    locationTask.addOnFailureListener {
+
     }
 }
 

@@ -6,11 +6,13 @@ import androidx.compose.ui.graphics.asAndroidBitmap
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.google.android.gms.maps.model.LatLng
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.crashlytics.buildtools.reloc.org.apache.commons.io.output.ByteArrayOutputStream
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
+
 
 class AuthViewModel : ViewModel() {
 
@@ -155,7 +157,7 @@ class AuthViewModel : ViewModel() {
     }
 
 
-    fun addField(name: String, type: String, description: String, images:List<ImageBitmap>?){
+    fun addField(name: String, type: String, description: String, images:List<ImageBitmap>?, location: LatLng){
         if (name.isEmpty() || description.isEmpty() || type.isEmpty() || images.isNullOrEmpty() ) {
             _fieldState.value = FieldState.Error("All fields must be filled")
             return
@@ -175,6 +177,8 @@ class AuthViewModel : ViewModel() {
                     "name" to name,
                     "type" to type,
                     "description" to description,
+                    "latitude" to location.latitude,
+                    "longitude" to location.longitude,
                     "creatorId" to auth.currentUser?.uid,
                 )
 

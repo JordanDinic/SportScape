@@ -228,7 +228,7 @@ fun AlbumScreen(modifier: Modifier = Modifier,
 
             Button(
                 onClick = {
-                    authViewModel.addField(name, type, description, viewState.selectedPictures)
+                    //authViewModel.addField(name, type, description, viewState.selectedPictures)
                 }, enabled = fieldState.value != FieldState.Loading
             ) {
                 Text(text = "Add field")

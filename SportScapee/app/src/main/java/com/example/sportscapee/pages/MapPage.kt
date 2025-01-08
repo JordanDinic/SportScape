@@ -6,12 +6,24 @@ import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.AlertDialog
 import androidx.compose.material.BottomAppBar
+import androidx.compose.material.Button
 import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
+import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.BarChart
@@ -27,11 +39,16 @@ import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
+import com.example.sportscapee.database.DataRetriver
+import com.example.sportscapee.models.SportField
 import com.example.sportscapee.navigation.Routes
 import com.example.sportscapee.view_models.AuthState
 import com.example.sportscapee.view_models.AuthViewModel
@@ -112,6 +129,16 @@ fun MapPage(modifier: Modifier = Modifier, navController: NavController, authVie
 
     // Kada korisnik pomeri mapu, deaktivirajte praćenje lokacije
 
+    // Svi tereni
+    var sportFields by remember { mutableStateOf(emptyList<SportField>()) }
+    DataRetriver.allSportFields {
+        sportFields = it
+    }
+
+    //Pracenje koji je SportField selektovan
+    val selectedField = remember { mutableStateOf<SportField?>(null) }
+
+
 
     Scaffold(
         modifier = Modifier.fillMaxSize()
@@ -148,6 +175,91 @@ fun MapPage(modifier: Modifier = Modifier, navController: NavController, authVie
                     snippet = "Your current location"
                 )
             }
+
+            sportFields.forEach { field ->
+                Marker(
+                    state = MarkerState(position = LatLng(field.latitude, field.longitude)),
+                    title = field.name,
+                    snippet = field.description,
+                    onClick = {
+                        selectedField.value = field
+                        true
+                    }
+                )
+            }
+
+        }
+
+        if (selectedField.value != null) {
+            AlertDialog(
+                onDismissRequest = { selectedField.value = null },
+                title = {
+                    Text(text = selectedField.value?.name ?: "")
+                },
+                text = {
+                    Column {
+                        Text(text = selectedField.value?.description ?: "")
+
+                        // Carousel za slike
+                        val images = selectedField.value?.imageUrls ?: emptyList()
+                        LazyRow {
+                            items(images) { imageUrl ->
+                                Image(
+                                    painter = rememberImagePainter(data = imageUrl),
+                                    contentDescription = null,
+                                    modifier = Modifier
+                                        .padding(4.dp)
+                                        .size(100.dp)
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        // Komentari
+                        var newComment by remember { mutableStateOf("") }
+
+                        Column {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                TextField(
+                                    value = newComment,
+                                    onValueChange = { newComment = it },
+                                    modifier = Modifier.weight(1f),
+                                    placeholder = { Text("Add a comment") }
+                                )
+                                Button(
+                                    onClick = {
+                                        // Logika za dodavanje komentara
+                                        // Dodajte komentar u Firestore za selektovani teren
+                                    },
+                                    modifier = Modifier.padding(start = 8.dp)
+                                ) {
+                                    Text("Post")
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            // Prikaz postojećih komentara
+                            val comments = selectedField.value?.comments ?: emptyList()
+                            comments.sortedByDescending { it.timestamp } // Ako postoji timestamp
+                                .forEach { comment ->
+                                    Text(
+                                        text = "${comment.userId}: ${comment.comment}",
+                                        modifier = Modifier.padding(4.dp)
+                                    )
+                                }
+                        }
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = { selectedField.value = null }) {
+                        Text("Close")
+                    }
+                }
+            )
         }
 
         // Deaktiviraj praćenje lokacije kada korisnik pomeri kameru

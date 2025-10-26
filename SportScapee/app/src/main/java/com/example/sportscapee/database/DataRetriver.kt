@@ -42,4 +42,18 @@ object DataRetriver {
                 }
             }
     }
+    fun allSportFieldsOfUser(uid: String, listener: (List<SportField>) -> Unit) {
+        val db = Firebase.firestore
+        db.collection("SportFields")
+            .whereEqualTo("creatorId", uid) // Dodavanje filtera za userId
+            .addSnapshotListener { snap, _ ->
+                if (snap != null && !snap.isEmpty) {
+                    val fields = snap.toObjects(SportField::class.java)
+                    listener(fields)
+                } else {
+                    listener(emptyList()) // Ako nema podataka, vraćamo praznu listu
+                }
+            }
+    }
+
 }

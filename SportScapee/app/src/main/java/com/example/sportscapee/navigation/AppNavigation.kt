@@ -9,10 +9,10 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.sportscapee.album.ProfilePictureViewModel
 import com.example.sportscapee.pages.AddSportFieldPage
-import com.example.sportscapee.pages.HomePage
 import com.example.sportscapee.pages.LeaderboardPage
 import com.example.sportscapee.pages.LoginPage
 import com.example.sportscapee.pages.MapPage
+import com.example.sportscapee.pages.ProfilePage
 import com.example.sportscapee.pages.SignupPage
 import com.example.sportscapee.profile_picture.AlbumViewModel
 import com.example.sportscapee.view_models.AuthViewModel
@@ -41,7 +41,8 @@ fun AppNavigation(modifier: Modifier = Modifier, authViewModel: AuthViewModel, a
             //AddSportFieldPage(modifier, navController, authViewModel)
         }
         composable(route = Routes.profile){
-            HomePage(modifier, navController, authViewModel)
+            //HomePage(modifier, navController, authViewModel)
+            ProfilePage(modifier, navController, authViewModel)
         }
         composable(route = Routes.leaderboard){
             LeaderboardPage(modifier, navController, authViewModel)

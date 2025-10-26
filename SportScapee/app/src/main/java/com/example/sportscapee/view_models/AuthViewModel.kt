@@ -28,8 +28,8 @@ class AuthViewModel : ViewModel() {
         checkAuthStatus()
     }
 
-    fun getCurrentUserId(): String? {
-        val userId = auth.currentUser?.uid
+    fun getCurrentUserId(): String {
+        val userId = auth.currentUser!!.uid
         return userId
     }
 
